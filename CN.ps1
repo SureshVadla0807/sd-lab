@@ -1,101 +1,82 @@
-        for(j = 0; j < n; j++) {
-            scanf("%d", &a[i][j]);
-            if(i != j && a[i][j] == 0) a[i][j] = INF;
-        }
+$ErrorActionPreference = 'Stop'
 
-    printf("Enter source (0 to %d): ", n-1);
-    scanf("%d", &s);
+# Create the CNLAB folder on the current user's Desktop.
+$desktop = [Environment]::GetFolderPath('Desktop')
+$target = Join-Path $desktop 'CNLAB'
+$tempZip = Join-Path $env:TEMP 'CNLAB_files.zip'
 
-    for(i = 0; i < n; i++) d[i] = INF;
-    d[s] = 0;
+$base64 = @"
+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
+VFQuY1BLBQYAAAAACgAKABEDAADSDgAAAAA=
+"@
 
-    for(i = 0; i < n; i++) {
-        min = INF; u = -1;
-        for(j = 0; j < n; j++)
-            if(!v[j] && d[j] < min) min = d[j], u = j;
-
-        if(u == -1) break;
-        v[u] = 1;
-
-        for(j = 0; j < n; j++)
-            if(!v[j] && d[u] + a[u][j] < d[j])
-                d[j] = d[u] + a[u][j];
-    }
-
-    for(i = 0; i < n; i++)
-        printf("Distance to %d = %d\n", i, d[i]);
-
-    return 0;
+try {
+    [IO.File]::WriteAllBytes($tempZip, [Convert]::FromBase64String(($base64 -replace '\s', '')))
+    New-Item -ItemType Directory -Path $target -Force | Out-Null
+    Expand-Archive -LiteralPath $tempZip -DestinationPath $target -Force
+    Write-Host "CNLAB created successfully at: $target" -ForegroundColor Green
+    Get-ChildItem -LiteralPath $target | Select-Object -ExpandProperty Name
 }
-'@
-$path = Join-Path $folder '4. Dijkstra Shortest Path Algorithm.c'
-Set-Content -LiteralPath $path -Value $content -Encoding UTF8
-
-$content = @'
-#include <stdio.h>
-
-int main() {
-    int a[50], n, i, j, t;
-
-    printf("Enter number of frames: ");
-    scanf("%d", &n);
-
-    printf("Enter frame numbers:\n");
-    for(i = 0; i < n; i++) scanf("%d", &a[i]);
-
-    for(i = 0; i < n-1; i++)
-        for(j = 0; j < n-i-1; j++)
-            if(a[j] > a[j+1]) {
-                t = a[j];
-                a[j] = a[j+1];
-                a[j+1] = t;
-            }
-
-    printf("Sorted frames:\n");
-    for(i = 0; i < n; i++) printf("%d ", a[i]);
-
-    return 0;
+finally {
+    Remove-Item -LiteralPath $tempZip -Force -ErrorAction SilentlyContinue
 }
-'@
-$path = Join-Path $folder '9. Frame Sorting in Buffers.c'
-Set-Content -LiteralPath $path -Value $content -Encoding UTF8
-
-$content = @'
-#include <stdio.h>
-#include <string.h>
-
-void crc(char data[], char poly[]) {
-    char temp[200];
-    int i, j, n = strlen(data), m = strlen(poly);
-
-    strcpy(temp, data);
-    for(i = 0; i < m - 1; i++) strcat(temp, "0");
-
-    for(i = 0; i < n; i++)
-        if(temp[i] == '1')
-            for(j = 0; j < m; j++)
-                temp[i+j] = (temp[i+j] == poly[j]) ? '0' : '1';
-
-    printf("CRC: ");
-    for(i = n; i < n + m - 1; i++) printf("%c", temp[i]);
-    printf("\n");
-}
-
-int main() {
-    char d[100];
-
-    printf("Enter binary data: ");
-    scanf("%99s", d);
-
-    crc(d, "1100000001111");       // CRC-12
-    crc(d, "11000000000000101");   // CRC-16
-    crc(d, "10001000000100001");   // CRC-CCITT
-    return 0;
-}
-'@
-$path = Join-Path $folder '2. CRC-12 CRC-16 CRC-CCITT.c'
-Set-Content -LiteralPath $path -Value $content -Encoding UTF8
-
-Write-Host "Created $($folder) with all lab files." -ForegroundColor Green
-Write-Host 'Files created:'
-Get-ChildItem -LiteralPath $folder | Select-Object -ExpandProperty Name
