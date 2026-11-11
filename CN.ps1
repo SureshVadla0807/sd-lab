@@ -1,82 +1,296 @@
-$ErrorActionPreference = 'Stop'
+# DevOpsLab.ps1
+# Run: irm "https://raw.githubusercontent.com/USERNAME/REPO/main/DevOpsLab.ps1" | iex
+$ErrorActionPreference = "Stop"
+$Root = Join-Path ([Environment]::GetFolderPath("Desktop")) "devopslab"
 
-# Create the CNLAB folder on the current user's Desktop.
-$desktop = [Environment]::GetFolderPath('Desktop')
-$target = Join-Path $desktop 'CNLAB'
-$tempZip = Join-Path $env:TEMP 'CNLAB_files.zip'
+function Make-Files {
+    $dirs = @("01-registration-form","02-git-github","03-github-scm","04-jenkins-setup","05-jenkins-cicd","06-docker-commands","07-docker-application","08-kubernetes-integration")
+    New-Item -ItemType Directory -Path $Root -Force | Out-Null
+    foreach ($d in $dirs) { New-Item -ItemType Directory -Path (Join-Path $Root $d) -Force | Out-Null }
 
-$base64 = @"
-UEsDBBQAAAAIAMaBal2h7iT4BwIAABQEAAAbAAAAMTAuIFdpcmVzaGFyayBQcmFjdGljYWwudHh0fVPbbtpAEH33V5zHVgqbkF6U
-VkolZEiD0iYWkEZ93KyHsMLZ3e4OEN76D/3DfknHxiFEglqy5J09c85cjrsnCnfD0WB82Rtd4e/vPyh6+dVggrxXTG5HA/Su+/L2
-vv0cD8dZ1lUYs45s3QPubKQ003GeAejgJpB7ialNcEwVGQbPCNqwXRIc8crHOaxjilNtCG/ubOfCHg8EFOX2bZuaV9bMN2rIdeBF
-JJVlpwqFNnPaxnbENe6jXyWK0K7E0ibLElvRvXxQyzoiSXJg/1Jqg07sQ1Om2Uq9U/hhaVW32mqVmEQ9nVrzqjmNsKlISJeSAMsJ
-JbG2VWpVB0+hFnlu8QjD4giTvDi+7ReNvA5B2tVsvetUei0tbAmy9wo9p6t1sqnBykjYJrYmtWVsz/iCInr2xle4tBR1NLP1HlDu
-3ZJiauT2kQxcGbwsaN/d8PgGX6MOs5RlHxRuE00XFfo2BakbF7aStTZ5M+aAQ8/lZFK0Y2vApUsHsehfj3exbA7z1kPdxS7K/2Dr
-4e9grXk8DB7m31+Dg9JlGXF+ju6nU9X9eKa6qtuCNw5N4vGlr5a1gTRSIGPFOrL6tgkVvFhbCM5O9jTBG6fBOzS4s5Msu/ZMn3eM
-WxsCD/UyxDvV86/V0c9uYe+rIyQvxpYTPQWK9pEcZ6WnBOcZkX4thE5ocoTohetRZf8AUEsDBBQAAAAIAMaBal1VWNi+CQEAANYC
-AAAjAAAANy4gRGF0YSBFbmNyeXB0aW9uIGFuZCBEZWNyeXB0aW9uLmO1UMFuwjAMvecrrE5tExWmbodJEEBC2n5i0ElRm44ICCgJ
-Bzbt3+cYNIZaiRM5JM7z87OfH4ytN4dGw8SHxuweVzPGjA2wVcZyAd8M8NQr5cAvnsqykgRExlofB2AkI2DvEGp58maDdrDV3qtP
-PYZEnPi+VhazkI5Gi4+lrZIBeNFbiqqdsrRBfoaZM4wRTIHz+Kbw/CKgoDvGZ9F257hBUilxblNJMEUhKEPjtzyiMJtCPs8hy4gE
-E/y+5xcajRAT2IzeIdGLOMCpG8aIyL8KvfH6Sl1dq3/dUFcddZV31lS74z7oZgypX9r/m7yn6SFt/bLnOzjva9Gx/6r77EeG0+Hg
-LJpnP+wXUEsDBBQAAAAIAMaBal2e2aSsDAEAAG0CAAAkAAAAOC4gQ29uZ2VzdGlvbiBDb250cm9sIExlYWt5IEJ1Y2tldC5jdZJN
-T8MwDIbv/RVW0VCrBgTXdd2NO+LMJWtSiNjcKB9CAvW/E6cJdCvLIW3t1+8Tu7lR2B+9kLCzTqjx/n1fFAodnLjCqobvAsKiADKw
-6ksyMNyFXTP4DC8GOnhgoNoiCrUJ0qEqn5BSB99/SBfLtlDWbZTYnmNQbETJ4JZSKX5eOnqnvYusK6WU+rcU/elADgNoTnx7xQDr
-dOhhNJUKfTy2oGDXAYZn0+Te14DZ9qKtlb3O9nGAQzVPqwFNiNj3AkArCTrQ7Vk8w59nLO97qZ0Ur7hETyCPVl5qhRm1ztL1YfZd
-HHCd0Hfz559ptPz9ywuHjHmRdE0Uvm1hQ5R0J9K5prgb6bxBKp+KH1BLAwQUAAAACADGgWpdqyuT5jQBAADiAgAAJgAAADYuIERp
-c3RhbmNlIFZlY3RvciBSb3V0aW5nIEFsZ29yaXRobS5jjVJBasMwELzrFdOEBJuYkh4TJ7m10EsPpbfEh9SSW1npqtgKFEr+3pVs
-p6YOJQJbYmdndlarsab8cJQKq9pJbW/fN2IsVaFJ4fHpAYvFQghNDh97TVGMbwFePkAJ8u3dPPNfAvl71AnKBCYVIfWz4uQiGt2T
-UxXISlUvMYrTANb5nhibyFGCKcUXKbmtfXVX6S9EbAeF9To4aDLxckedFocjjTXmKTRWIN5mszhAHVw2cNnAZR8euMm3OtuWWexb
-CyfmtrHWplc0jaJpFM3fgv/4udJTuO0iCh5Mhpt1mMp0yq5McHWODGi8OusbdAKzjjgs0yesh4Re18O22nfRn96Onu3RaXqD278e
-FGwRpo+J9EPjZ9LO7cqL6GRfLCtw6kQGlfI8n1buFP6VcseKWE+cxA9QSwMEFAAAAAgAxoFqXcXopHMvAQAAegIAAB4AAAA1LiBC
-cm9hZGNhc3QgVHJlZSBmb3IgU3VibmV0LmN9UUFugzAQvPsV01SJQDgVuYY0t77C5eACVowSu9gmbRXl711DSZs2qiVY8Mzuzuze
-a1Pt+7rBxoda24fdljFtAg5SmyTFiYFOvJBilZfx4TjGgEec8jOH4fAcXbwqLmRFaM7hxqA5Wo6+YAP+6oihktmTCY2D6Q8vFKzC
-zvrg15ilYxlfSUOseT3jWJj0ZrKsW1k1pvogucHp9/WzmdKVdYmO7QtobGAoZFk6QBPcjnA7wi3B102l0KVoy9utnbVhkIwkR7CY
-1ylpp3EsV7cM+KlKJ1yWxeH5kXUUPv6tvuC3nd43iSJJbhp+PD1ROqEos7iy8I/DYRUqkaIvyQcWC9wd6eNn1elMzuY1lltyQlOk
-ddHe0uIPN9YY9f5GLs70NXZm32/XhN4ZkszO7BNQSwMEFAAAAAgAxoFqXWMcxNwJAQAAOQIAACQAAAAxLiBEYXRhIExpbmsgTGF5
-ZXIgRnJhbWluZyBNZXRob2RzLmONkDFPwzAQhXf/ilOqNLaCUMLWhDDQZGNrh0rQwSQOPSk4yHYm1P/OOZCoLSrCk/XuvfP3vEBd
-d0Oj4N66BvvbwwNbnEgG9ZvXGGoH7xI1F/DJgE59kAbsc5ok+3wUvANzNt4/KOdaHlTaKQONdDKDQHz7bC01jcLVygY3YMVF5EWv
-abOsfXDdD9plEDZk5DQWBNQpza34K7VxQ9sSdwblUwWb7W5+uu0NRyggyYkc9zlgHE99xgot9zoUBURlJObtZTlt8Ed1Vs2jsPYl
-KPRjOJ5hjQTVdhf85n1EN5MCV+NHvaKzIvs37jWGyyppBMulN8TppXA3CWJOnm5OgrNaRrnBaOJhR/YFUEsDBBQAAAAIAMaBal1G
-H0M3HQEAAIMCAAAdAAAAMy4gU2xpZGluZyBXaW5kb3cgR28tQmFjay1OLmN1kUFPhDAQhe/9FU/MbiAQs14F9mCi3jzowYsXpEXL
-slNT2DTR7H+3LbBWs3ApnXnvzTfppaS6O3CBoh+4VFcfW8YkDdhXkuIE3wz2cwXKYDLIDJ3qh5z5+qe2nSaO7mgQGo2u9qK/QZTk
-vtvXFdnmikcZ1jQV/1qMJK4MevklFnzmrM8xjPMQb9AoDVIkkoUMp04mZKuNJUpc55AoSpA70xJm3nXet81PV+dprUfmaFFApgbr
-tfv19jZNk5M0RH0WNubeQ674K1mSdqbwQ5rYr7G1wS7PX3x6iBIGzlleeoEHhduq3uHRZ09Lhr6Z27/YMm844kn0Z6lD7ZsW1e63
-dGT/Q17GV7VspEwn+LtwQVPKKNdiOGjCJmdH9gNQSwMEFAAAAAgAxoFqXU10BfN+AQAAlAMAACUAAAA0LiBEaWprc3RyYSBTaG9y
-dGVzdCBQYXRoIEFsZ29yaXRobS5jlVPLTsMwELznK7atWsWqi5Jjm5YTIHHhB0IOJnbAgTrIjwhU5d9Z50EJioqwFLnx7I5nZ9KF
-VPmb4wL2xnJZXb1cBwsuCqkE3D/cwXa7DQKpLByZVCGBUwC4/IGiwNI4yvxDgXdb7Tc4wClqku9KSaGkYCgcJTa5JGiRd41YEc5v
-lRUaaqGtzIXZwZx0nSZnCuEln1NYKTLZxXjJcqHyT5RntfyAMIKi0qAqEPxZkN2jGujwOJSoLEpAwh4Ubus1aaEBLju47OAS4X7c
-YY0ksVRmaZn19MOSBd4yOyDJagV9CRyQl5zfvLHnrmZqMFM5nQs/jq1gyQnaQkFt4ilvzODN9IgYjRxdylOTtVUXu86TY2p9Ozj8
-sYmTP1z7bcis9mOjH9zve09IelZ/QlvaspfT9zhvGs4LT1qw1/ONdeq8+PhH9b9FIMMa03BZJ8drGJd3LrVRjas7Hc0l476JhkBv
-pLFMYZhtkli/5PhVUv+v8MkM4WlhnVY+lSb4AlBLAwQUAAAACADGgWpd3vSNXOUAAAD2AQAAHQAAADkuIEZyYW1lIFNvcnRpbmcg
-aW4gQnVmZmVycy5jhZDBasMwEETv+orBIcXGakkOvcRJbvmCHl0f1EgmEvW6yPKp5N+7ViKw20D3srDzZmBnZen8OWqD/RC07V8u
-RyEsBXTKUl7gW4BnOqj6ddNIkISVcBKhElH78qy2eXaiYDxo7D549S1arzoz7JAVVeSGsyLG1jqTeKLioTt67hnD7p2St+19bnHA
-poLFHsSrLItlpKptk1J/88/bmyOKCXA3wEXAToibI/HvNle1a3Dk7125bVIf8wkcM0HVHyVaD3frQ5nvDISldl0289b7YHSq899O
-km2twa3MS/EmjJ6YF1fxA1BLAwQUAAAACADGgWpdfwQWrVkBAADQAgAAHAAAADIuIENSQy0xMiBDUkMtMTYgQ1JDLUNDSVRULmNt
-kj1vgzAQhnd+xYmowgjSQIZK+aAdUIeuVTbK4NqkMUoMcpxKUdX/3rOxFYh6A+Dz+7x3PjMTkh0vvIHtWXPRPR6eg9kopYT8Mrng
-uxMcmGKEHagCTjWt6hTsou+O16qO4ScADJvSzamvlllWb2xOSA0ihTYFCQWg67GRxHjEKZxuGWMUbwKLYIr1V2KMUlsuHqz2nSIC
-kWwDArZIzyHHzySJLUK1Q8Is9FZ3iBzkdss2t7dIJWooCojy6Lbl6XagW1MQX2Pax2CRtGgCZLQohvG0OJ8XiLII1qaE66zH8eo9
-Ccv3cg3h3QmlaxeSySk988DC1FWtHem3PqTx+g0CM/cTFZJMLodXub2ZCfMqdaPgU0iqrnbet4bOjEpTcLU6Y0nux2p+Bo6DztHN
-Ro6BjBvIYgF4rHm+/F88EJkDvPhpKrYSpzSPibgs33Y7q1eNviiJN4Rn/gNQSwECFAMUAAAACADGgWpdoe4k+AcCAAAUBAAAGwAA
-AAAAAAAAAAAApIEAAAAAMTAuIFdpcmVzaGFyayBQcmFjdGljYWwudHh0UEsBAhQDFAAAAAgAxoFqXVVY2L4JAQAA1gIAACMAAAAA
-AAAAAAAAAKSBQAIAADcuIERhdGEgRW5jcnlwdGlvbiBhbmQgRGVjcnlwdGlvbi5jUEsBAhQDFAAAAAgAxoFqXZ7ZpKwMAQAAbQIA
-ACQAAAAAAAAAAAAAAKSBigMAADguIENvbmdlc3Rpb24gQ29udHJvbCBMZWFreSBCdWNrZXQuY1BLAQIUAxQAAAAIAMaBal2rK5Pm
-NAEAAOICAAAmAAAAAAAAAAAAAACkgdgEAAA2LiBEaXN0YW5jZSBWZWN0b3IgUm91dGluZyBBbGdvcml0aG0uY1BLAQIUAxQAAAAI
-AMaBal3F6KRzLwEAAHoCAAAeAAAAAAAAAAAAAACkgVAGAAA1LiBCcm9hZGNhc3QgVHJlZSBmb3IgU3VibmV0LmNQSwECFAMUAAAA
-CADGgWpdYxzE3AkBAAA5AgAAJAAAAAAAAAAAAAAApIG7BwAAMS4gRGF0YSBMaW5rIExheWVyIEZyYW1pbmcgTWV0aG9kcy5jUEsB
-AhQDFAAAAAgAxoFqXUYfQzcdAQAAgwIAAB0AAAAAAAAAAAAAAKSBBgkAADMuIFNsaWRpbmcgV2luZG93IEdvLUJhY2stTi5jUEsB
-AhQDFAAAAAgAxoFqXU10BfN+AQAAlAMAACUAAAAAAAAAAAAAAKSBXgoAADQuIERpamtzdHJhIFNob3J0ZXN0IFBhdGggQWxnb3Jp
-dGhtLmNQSwECFAMUAAAACADGgWpd3vSNXOUAAAD2AQAAHQAAAAAAAAAAAAAApIEfDAAAOS4gRnJhbWUgU29ydGluZyBpbiBCdWZm
-ZXJzLmNQSwECFAMUAAAACADGgWpdfwQWrVkBAADQAgAAHAAAAAAAAAAAAAAApIE/DQAAMi4gQ1JDLTEyIENSQy0xNiBDUkMtQ0NJ
-VFQuY1BLBQYAAAAACgAKABEDAADSDgAAAAA=
-"@
-
-try {
-    [IO.File]::WriteAllBytes($tempZip, [Convert]::FromBase64String(($base64 -replace '\s', '')))
-    New-Item -ItemType Directory -Path $target -Force | Out-Null
-    Expand-Archive -LiteralPath $tempZip -DestinationPath $target -Force
-    Write-Host "CNLAB created successfully at: $target" -ForegroundColor Green
-    Get-ChildItem -LiteralPath $target | Select-Object -ExpandProperty Name
+    $html = @'
+<!DOCTYPE html>
+<html>
+<head><title>Event Registration</title></head>
+<body>
+<h2>Event Registration Form</h2>
+<form onsubmit="register(event)">
+<label>Name:</label> <input id="name" required><br><br>
+<label>Email:</label> <input type="email" id="email" required><br><br>
+<label>Phone:</label> <input type="tel" id="phone" required><br><br>
+<label>College:</label> <input id="college" required><br><br>
+<label>Event:</label>
+<select id="event"><option>Web Development</option><option>AI Workshop</option><option>Hackathon</option></select><br><br>
+<button type="submit">Register</button>
+</form>
+<p id="message"></p>
+<script>
+function register(e) {
+ e.preventDefault();
+ document.getElementById("message").innerHTML =
+ "Registration Successful! Welcome " + document.getElementById("name").value;
 }
-finally {
-    Remove-Item -LiteralPath $tempZip -Force -ErrorAction SilentlyContinue
+</script>
+</body>
+</html>
+'@
+    $git = @'
+GIT AND GITHUB COMMANDS
+git --version                 Check Git version
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+git init                      Initialize repository
+git status                    Check status
+git add .                     Stage files
+git commit -m "message"       Commit changes
+git log                       View history
+git branch                    List branches
+git clone URL                 Clone repository
+git remote -v                 View remote
+git push                      Push commits
+git pull                      Pull changes
+
+Basic flow:
+git init
+git add .
+git commit -m "First commit"
+git branch -M main
+git remote add origin REPOSITORY_URL
+git push -u origin main
+
+Use Git Credential Manager/browser authentication. Never paste your GitHub password into this script.
+'@
+    $docker = @'
+DOCKER COMMANDS
+docker --version
+docker info
+docker images
+docker pull nginx
+docker ps
+docker ps -a
+docker run hello-world
+docker run -d -p 8082:80 --name mynginx nginx
+docker stop mynginx
+docker start mynginx
+docker restart mynginx
+docker logs mynginx
+docker exec -it mynginx sh
+docker rm -f mynginx
+docker rmi nginx
+docker volume ls
+docker system prune  (removes unused data; use carefully)
+
+Open http://localhost:8082 for the Nginx test.
+'@
+    $dockerfile = @'
+FROM nginx:latest
+COPY index.html /usr/share/nginx/html/index.html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+'@
+    $jenkins = @'
+pipeline {
+    agent any
+    triggers { pollSCM('H/2 * * * *') }
+    options { skipDefaultCheckout(true) }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+                echo 'GitHub source downloaded'
+            }
+        }
+        stage('Build') {
+            steps {
+                bat 'echo Building Event Registration App'
+                bat 'dir'
+            }
+        }
+        stage('Test') {
+            steps {
+                bat 'if not exist index.html exit /b 1'
+                echo 'HTML file verified'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                bat 'if not exist deployment mkdir deployment'
+                bat 'copy /Y index.html deployment\\'
+                archiveArtifacts artifacts: 'deployment/**', fingerprint: true
+            }
+        }
+    }
+    post {
+        success { echo 'CI/CD completed successfully' }
+        failure { echo 'CI/CD failed' }
+    }
+}
+'@
+    Set-Content "$Root\01-registration-form\index.html" $html -Encoding UTF8
+    Set-Content "$Root\02-git-github\Git-GitHub-Commands.txt" $git -Encoding UTF8
+    Set-Content "$Root\03-github-scm\index.html" $html -Encoding UTF8
+    Set-Content "$Root\04-jenkins-setup\Jenkins-Setup.txt" @'
+Jenkins local URL: http://localhost:8080
+Install Jenkins LTS and a compatible Java JDK.
+Run Jenkins as a Windows service.
+After service starts, open:
+C:\Program Files\Jenkins\secrets\initialAdminPassword
+Complete Unlock Jenkins, suggested plugins, and admin user setup manually.
+Keep this lab instance local; do not expose it publicly.
+'@ -Encoding UTF8
+    Set-Content "$Root\05-jenkins-cicd\Jenkinsfile" $jenkins -Encoding UTF8
+    Set-Content "$Root\06-docker-commands\Docker-Commands.txt" $docker -Encoding UTF8
+    Set-Content "$Root\07-docker-application\index.html" $html -Encoding UTF8
+    Set-Content "$Root\07-docker-application\Dockerfile" $dockerfile -Encoding UTF8
+    Set-Content "$Root\08-kubernetes-integration\Kubernetes-Integration.txt" @'
+EXPERIMENT 8 - DOCKER + KUBERNETES
+1. Start Docker Desktop.
+2. Settings > Kubernetes > Enable Kubernetes > Apply & Restart.
+3. Wait until Kubernetes is running.
+4. Run:
+docker --version
+kubectl version --client
+kubectl cluster-info
+kubectl get nodes
+kubectl get namespaces
+docker images
+The event-registration image is built in Experiment 7.
+Experiment 9 will create the Kubernetes Deployment and Service.
+'@ -Encoding UTF8
+    Write-Host "Files created: $Root" -ForegroundColor Green
+}
+
+function Need-Command($name) {
+    if (-not (Get-Command $name -ErrorAction SilentlyContinue)) {
+        Write-Host "$name is not installed or not in PATH." -ForegroundColor Yellow
+        return $false
+    }
+    return $true
+}
+
+function Git-Push {
+    Make-Files
+    if (-not (Need-Command git)) { return }
+    $name = Read-Host "Git username"
+    $email = Read-Host "Git email"
+    $url = Read-Host "GitHub repository URL"
+    if (!$name -or !$email -or !$url) { Write-Host "All three values are required."; return }
+    $dir = "$Root\03-github-scm"
+    Push-Location $dir
+    try {
+        git config user.name $name
+        git config user.email $email
+        if (!(Test-Path ".git")) { git init }
+        git branch -M main
+        if ((git remote) -contains "origin") { git remote set-url origin $url } else { git remote add origin $url }
+        git add .
+        git commit -m "Add event registration app"
+        if ($LASTEXITCODE -ne 0) { Write-Host "No new commit was created; continuing to push." -ForegroundColor Yellow }
+        git push -u origin main
+    } finally { Pop-Location }
+}
+
+function Install-Jenkins {
+    if (-not (Need-Command winget)) { return }
+    if (-not (Get-Service Jenkins -ErrorAction SilentlyContinue)) {
+        if (-not (Get-Command java -ErrorAction SilentlyContinue)) {
+            winget install --id EclipseAdoptium.Temurin.21.JDK -e --accept-package-agreements --accept-source-agreements
+        }
+        winget install --id Jenkins.Jenkins -e --accept-package-agreements --accept-source-agreements
+    }
+    $svc = Get-Service Jenkins -ErrorAction SilentlyContinue
+    if ($svc) {
+        if ($svc.Status -ne "Running") { Start-Service Jenkins }
+        Start-Sleep 5
+        $pwdFile = "C:\Program Files\Jenkins\secrets\initialAdminPassword"
+        if (Test-Path $pwdFile) {
+            notepad $pwdFile
+            Start-Process "http://localhost:8080"
+        } else { Write-Host "Jenkins is installed, but password file was not found at $pwdFile" -ForegroundColor Yellow }
+    } else {
+        Write-Host "Jenkins service not detected. Check winget output or install Jenkins LTS manually." -ForegroundColor Yellow
+    }
+}
+
+function Jenkins-Pipeline {
+    Make-Files
+    Write-Host "Jenkinsfile created at $Root\05-jenkins-cicd\Jenkinsfile"
+    Write-Host "Copy it to the root of your GitHub repo and push it."
+    Write-Host "Jenkins: New Item > Pipeline > Pipeline script from SCM > Git."
+    Write-Host "Enter repo URL, branch */main, Script Path Jenkinsfile, then Build Now."
+    Start-Process "$Root\05-jenkins-cicd"
+}
+
+function Docker-Test {
+    Make-Files
+    if (-not (Need-Command docker)) { return }
+    docker info | Out-Null
+    if ($LASTEXITCODE -ne 0) { Write-Host "Start Docker Desktop first."; return }
+    docker pull nginx
+    if ($LASTEXITCODE -ne 0) { return }
+    if ((docker ps -a --filter "name=^mynginx$" --format "{{.Names}}") -contains "mynginx") { docker rm -f mynginx | Out-Null }
+    docker run -d -p 8082:80 --name mynginx nginx
+    if ($LASTEXITCODE -eq 0) { Start-Process "http://localhost:8082" }
+}
+
+function Docker-App {
+    Make-Files
+    if (-not (Need-Command docker)) { return }
+    docker info | Out-Null
+    if ($LASTEXITCODE -ne 0) { Write-Host "Start Docker Desktop first."; return }
+    Push-Location "$Root\07-docker-application"
+    try {
+        docker build -t event-registration:latest .
+        if ($LASTEXITCODE -ne 0) { return }
+        if ((docker ps -a --filter "name=^event-app$" --format "{{.Names}}") -contains "event-app") { docker rm -f event-app | Out-Null }
+        docker run -d -p 8081:80 --name event-app event-registration:latest
+        if ($LASTEXITCODE -eq 0) { Start-Process "http://localhost:8081" }
+    } finally { Pop-Location }
+}
+
+function Kubernetes-Check {
+    Make-Files
+    if (-not (Need-Command docker) -or -not (Need-Command kubectl)) { return }
+    docker --version
+    kubectl version --client
+    kubectl cluster-info
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Enable Kubernetes in Docker Desktop: Settings > Kubernetes > Enable Kubernetes > Apply & Restart." -ForegroundColor Yellow
+        return
+    }
+    kubectl get nodes
+    kubectl get namespaces
+    docker images
+    Write-Host "Experiment 8 checks complete. Kubernetes deployment is reserved for Experiment 9." -ForegroundColor Green
+}
+
+Make-Files
+while ($true) {
+    Write-Host "`n========= DEVOPS LAB (1-8) =========" -ForegroundColor Cyan
+    Write-Host "Folder: $Root"
+    Write-Host "1. Create files and open Experiment 1"
+    Write-Host "2. GitHub source control: configure and push"
+    Write-Host "3. Install/start Jenkins and open setup"
+    Write-Host "4. Prepare Jenkins CI/CD pipeline"
+    Write-Host "5. Docker commands: run Nginx test"
+    Write-Host "6. Build and run Docker application"
+    Write-Host "7. Check Docker-Kubernetes integration"
+    Write-Host "8. Open devopslab folder"
+    Write-Host "9. Exit"
+    $choice = Read-Host "Choose"
+    try {
+        switch ($choice) {
+            "1" { Start-Process "$Root\01-registration-form\index.html" }
+            "2" { Git-Push }
+            "3" { Install-Jenkins }
+            "4" { Jenkins-Pipeline }
+            "5" { Docker-Test }
+            "6" { Docker-App }
+            "7" { Kubernetes-Check }
+            "8" { Start-Process explorer.exe -ArgumentList "`"$Root`"" }
+            "9" { break }
+            default { Write-Host "Choose 1 to 9." -ForegroundColor Yellow }
+        }
+    } catch { Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red }
+    if ($choice -eq "9") { break }
 }
