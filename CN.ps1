@@ -142,12 +142,13 @@ pipeline {
     Set-Content (Join-Path $Root "02-git-github\Git-GitHub-Commands.txt") $git -Encoding UTF8
     Set-Content (Join-Path $Root "03-github-scm\index.html") $html -Encoding UTF8
     Set-Content (Join-Path $Root "04-jenkins-setup\Jenkins-Setup.txt") @'
-Jenkins is NOT installed by DevOpsLab.ps1.
-Install/start Jenkins separately at http://localhost:8080.
-Complete initial administrator setup once.
-Create an API token: Jenkins user menu > Configure > API Token.
-The CI/CD option asks for your Jenkins username and API token securely.
-Required Jenkins plugins: Git plugin and Pipeline (workflow) plugin.
+Jenkins installation is intentionally excluded from this lab script.
+Jenkins must already be running and initially configured before Experiment 5.
+Required plugins: Git plugin and Pipeline (workflow) plugin.
+For automated CI/CD, choose option 2 in the main menu.
+The script pushes the application and Jenkinsfile to GitHub, creates or updates the Pipeline job through the Jenkins API, triggers the build, and checks its result.
+You will be prompted for the Jenkins URL, username, API token, GitHub repository URL, and branch.
+The API token is entered as hidden input and is not written to disk.
 Keep Jenkins local; do not expose it publicly.
 '@ -Encoding UTF8
     Set-Content (Join-Path $Root "05-jenkins-cicd\Jenkinsfile") $jenkinsfile -Encoding UTF8
@@ -418,31 +419,29 @@ Make-Files
 while ($true) {
     Write-Host "`n========== DEVOPS LAB (EXPERIMENTS 1-8) ==========" -ForegroundColor Cyan
     Write-Host "Folder: $Root"
-    Write-Host "1. Create files and open registration form"
-    Write-Host "2. Fully automate GitHub + Jenkins CI/CD"
-    Write-Host "3. Open Jenkins setup instructions"
-    Write-Host "4. Open Jenkinsfile"
-    Write-Host "5. Docker commands: run Nginx test"
-    Write-Host "6. Build and run Docker application"
-    Write-Host "7. Check Docker-Kubernetes integration"
-    Write-Host "8. Open devopslab folder"
-    Write-Host "9. Exit"
+    Write-Host "1. Create files and open Experiment 1"
+    Write-Host "2. AUTOMATE GitHub push + Jenkins CI/CD (no Jenkins installation)"
+    Write-Host "3. Open Jenkinsfile"
+    Write-Host "4. Docker commands: run Nginx test"
+    Write-Host "5. Build and run Docker application"
+    Write-Host "6. Check Docker-Kubernetes integration"
+    Write-Host "7. Open devopslab folder"
+    Write-Host "8. Exit"
     $choice = Read-Host "Choose"
     try {
         switch ($choice) {
             "1" { Start-Process (Join-Path $Root "01-registration-form\index.html") }
             "2" { Run-GitJenkins }
-            "3" { Start-Process (Join-Path $Root "04-jenkins-setup\Jenkins-Setup.txt") }
-            "4" { Start-Process notepad.exe -ArgumentList "`"$(Join-Path $Root '05-jenkins-cicd\Jenkinsfile')`"" }
-            "5" { Docker-Test }
-            "6" { Docker-App }
-            "7" { Kubernetes-Check }
-            "8" { Start-Process explorer.exe -ArgumentList "`"$Root`"" }
-            "9" { break }
-            default { Write-Host "Choose 1 to 9." -ForegroundColor Yellow }
+            "3" { Start-Process notepad.exe -ArgumentList "`"$(Join-Path $Root '05-jenkins-cicd\Jenkinsfile')`"" }
+            "4" { Docker-Test }
+            "5" { Docker-App }
+            "6" { Kubernetes-Check }
+            "7" { Start-Process explorer.exe -ArgumentList "`"$Root`"" }
+            "8" { break }
+            default { Write-Host "Choose 1 to 8." -ForegroundColor Yellow }
         }
     } catch {
         Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
     }
-    if ($choice -eq "9") { break }
+    if ($choice -eq "8") { break }
 }
